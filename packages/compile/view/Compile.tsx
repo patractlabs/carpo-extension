@@ -1,8 +1,7 @@
-import { PlusOutlined } from '@ant-design/icons';
 import { sendMessage } from '@carpo/common/sendMessage';
-import { RowItem, useRedspot } from '@carpo/react-components';
-import { Button, Input, Select, Switch } from 'antd';
-import React, { useCallback, useEffect, useState } from 'react';
+import { RowItem, RowItemAddition, useRedspot } from '@carpo/react-components';
+import { Button, Select, Switch } from 'antd';
+import React, { useEffect, useState } from 'react';
 import { RedspotConfig } from 'redspot/types/config';
 
 const Compile: React.FC = () => {
@@ -19,12 +18,6 @@ const Compile: React.FC = () => {
     setToolchain(config?.contract.ink.toolchain ?? 'nightly');
     setSources(config?.contract.ink.sources ?? []);
   }, [config]);
-
-  const changeSource = useCallback((value: string, index: number) => {
-    setSources((sources) => {
-      return sources.map((source, i) => (i === index ? value : source));
-    });
-  }, []);
 
   return (
     <>
@@ -46,20 +39,14 @@ const Compile: React.FC = () => {
           value={toolchain}
         />
       </RowItem>
-      <RowItem label='Sources'>
-        {sources.map((source, index) => (
-          <Input
-            key={index}
-            onChange={(e) => {
-              changeSource(e.target.value, index);
-            }}
-            value={source}
-          />
-        ))}
-        <Button block icon={<PlusOutlined />} onClick={() => setSources([...sources, ''])} type='dashed'>
-          Add source
-        </Button>
-      </RowItem>
+      <RowItemAddition
+        buttonTxt='Add source'
+        data={sources}
+        handleChange={(data) => {
+          setSources(data);
+        }}
+        label='Sources'
+      />
       <Button.Group style={{ marginTop: 8, width: '100%' }}>
         <Button
           onClick={() => {
