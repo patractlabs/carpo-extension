@@ -13,6 +13,7 @@ export interface RequestSignatures {
   'redspot.compile': [null, null];
   'redspot.getScripts': [null, Uri[]];
   'redspot.subScripts': [null, Uri[], Uri[]];
+  'redspot.run': [string, null];
 }
 
 export type MessageTypes = keyof RequestSignatures;

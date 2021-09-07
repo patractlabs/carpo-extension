@@ -101,6 +101,10 @@ export abstract class AbstractViewProvider implements vscode.WebviewViewProvider
         });
 
         return this._ctx.getScriptFiles();
+      case 'redspot.run':
+        await this._ctx.run(request as RequestTypes['redspot.run']);
+
+        return null;
 
       default:
         throw new Error(`Unable to handle message of type ${type}`);

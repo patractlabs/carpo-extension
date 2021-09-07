@@ -52,29 +52,44 @@ export abstract class Redspot extends Init {
       .then((files) => files, console.error);
   }
 
-  private watchScripts(): vscode.FileSystemWatcher[] {
-    return this.#scriptPaths.map((scriptPath) => {
-      const watcher = vscode.workspace.createFileSystemWatcher(
-        {
-          base: path.resolve(this.basePath, scriptPath),
-          pattern: '*.{ts,js}'
-        },
-        false,
-        false,
-        false
-      );
+  public get isRedspotProject(): boolean {
+    return (
+      fs.existsSync(path.join(this.basePath, 'package.json')) &&
+      fs.existsSync(path.join(this.basePath, 'redspot.config.ts'))
+    );
+  }
 
-      const change = () => {
-        this.getScriptFiles().then((files) => {
-          this.emit('redspot.script.change', files);
-        }, console.error);
-      };
+  public get redspotVersion(): any {
+    return execSync(`node ${this.redspotBin} --version`).toString();
+  }
 
-      watcher.onDidCreate(change);
-      watcher.onDidDelete(change);
+  public get redspotConfig(): Promise<RedspotConfig> {
+    return this.#redspotConfig;
+  }
 
-      return watcher;
-    });
+  public setRedspotConfig(_redspotConfig: RedspotConfig): void {
+    fs.writeJsonSync(userSettingPath(this.basePath), _redspotConfig, { spaces: 2 });
+    this.#redspotConfig = Promise.resolve(_redspotConfig);
+    this.emit('redspot.config.change', _redspotConfig);
+  }
+
+  public compile(): Promise<vscode.TaskExecution> {
+    return this.runCli(`node ${this.redspotBin} compile`);
+  }
+
+  public run(scriptPath: string): Promise<vscode.TaskExecution> {
+    return this.runCli(`node ${this.redspotBin} run ${scriptPath}`);
+  }
+
+  public getUserRedspotConfig(): RedspotConfig {
+    process.chdir(this.basePath);
+    const execCommand = `node ${this.redspotBin} metadata`;
+
+    const output = execSync(execCommand, { maxBuffer: 1024 * 2048 }).toString();
+
+    const outputObj: RedspotConfig = JSON.parse(output);
+
+    return outputObj;
   }
 
   protected checkRedspotVersion(): Promise<void> {
@@ -108,39 +123,28 @@ export abstract class Redspot extends Init {
     return Promise.resolve();
   }
 
-  public get isRedspotProject(): boolean {
-    return (
-      fs.existsSync(path.join(this.basePath, 'package.json')) &&
-      fs.existsSync(path.join(this.basePath, 'redspot.config.ts'))
-    );
-  }
+  private watchScripts(): vscode.FileSystemWatcher[] {
+    return this.#scriptPaths.map((scriptPath) => {
+      const watcher = vscode.workspace.createFileSystemWatcher(
+        {
+          base: path.resolve(this.basePath, scriptPath),
+          pattern: '*.{ts,js}'
+        },
+        false,
+        false,
+        false
+      );
 
-  public get redspotVersion(): any {
-    return execSync(`node ${this.redspotBin} --version`).toString();
-  }
+      const change = () => {
+        this.getScriptFiles().then((files) => {
+          this.emit('redspot.script.change', files);
+        }, console.error);
+      };
 
-  public get redspotConfig(): Promise<RedspotConfig> {
-    return this.#redspotConfig;
-  }
+      watcher.onDidCreate(change);
+      watcher.onDidDelete(change);
 
-  public setRedspotConfig(_redspotConfig: RedspotConfig): void {
-    fs.writeJsonSync(userSettingPath(this.basePath), _redspotConfig, { spaces: 2 });
-    this.#redspotConfig = Promise.resolve(_redspotConfig);
-    this.emit('redspot.config.change', _redspotConfig);
-  }
-
-  public compile(): Promise<vscode.TaskExecution> {
-    return this.runCli(`node ${this.redspotBin} compile`);
-  }
-
-  public getUserRedspotConfig(): RedspotConfig {
-    process.chdir(this.basePath);
-    const execCommand = `node ${this.redspotBin} metadata`;
-
-    const output = execSync(execCommand, { maxBuffer: 1024 * 2048 }).toString();
-
-    const outputObj: RedspotConfig = JSON.parse(output);
-
-    return outputObj;
+      return watcher;
+    });
   }
 }
