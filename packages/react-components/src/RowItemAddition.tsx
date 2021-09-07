@@ -1,4 +1,4 @@
-import PlusOutlined from '@ant-design/icons';
+import { MinusCircleOutlined, PlusOutlined } from '@ant-design/icons';
 import { Button, Input } from 'antd';
 import React, { FC, useCallback, useState } from 'react';
 
@@ -26,16 +26,27 @@ const RowItemAdditon: FC<{ label: string; buttonTxt: string; data: string[]; han
       [handleChangeSourceData, sourceData]
     );
 
+    const deleteItem = useCallback(
+      (index: number) => {
+        sourceData.splice(index, 1);
+
+        handleChangeSourceData(sourceData);
+      },
+      [handleChangeSourceData, sourceData]
+    );
+
     return (
       <RowItem label={label}>
         {sourceData.map((source, index) => (
-          <Input
-            key={index}
-            onChange={(e) => {
-              changeItem(e.target.value, index);
-            }}
-            value={source}
-          />
+          <div key={index}>
+            <Input
+              onChange={(e) => {
+                changeItem(e.target.value, index);
+              }}
+              suffix={<MinusCircleOutlined onClick={() => deleteItem(index)} />}
+              value={source}
+            />
+          </div>
         ))}
         <Button
           block
