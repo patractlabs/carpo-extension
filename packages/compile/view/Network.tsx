@@ -34,7 +34,7 @@ const NetworkView: FC = () => {
               networks[type].accounts = data;
               setNetworks(Object.assign({}, config?.networks));
             }}
-            label='Sources'
+            label='Accounts'
           />
           <RowItem label='EndPoint'>
             <Input

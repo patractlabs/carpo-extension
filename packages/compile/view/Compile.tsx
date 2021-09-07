@@ -39,14 +39,16 @@ const Compile: React.FC = () => {
           value={toolchain}
         />
       </RowItem>
-      <RowItemAddition
-        buttonTxt='Add source'
-        data={sources}
-        handleChange={(data) => {
-          setSources(data);
-        }}
-        label='Sources'
-      />
+      {config?.contract ? (
+        <RowItemAddition
+          buttonTxt='Add source'
+          data={config.contract.ink.sources}
+          handleChange={(data) => {
+            setSources(data);
+          }}
+          label='Sources'
+        />
+      ) : null}
       <Button.Group style={{ marginTop: 8, width: '100%' }}>
         <Button
           onClick={() => {
