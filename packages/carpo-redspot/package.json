@@ -31,6 +31,11 @@
           "type": "webview",
           "id": "carpo.compileView",
           "name": "Compile"
+        },
+        {
+          "type": "webview",
+          "id": "carpo.runView",
+          "name": "Run"
         }
       ]
     }
