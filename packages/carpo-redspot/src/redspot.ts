@@ -11,12 +11,17 @@ import { Init } from './init';
 import { doNpmInstall, doYarnAdd, shouldUseYarn } from './utils';
 
 export abstract class Redspot extends Init {
+  #scriptWatchers: vscode.FileSystemWatcher[];
+  #scriptPaths: string[] = ['scripts'];
+
   public redspotBin: string;
   #redspotConfig: Promise<RedspotConfig>;
 
   constructor(_basePath: string) {
     super(_basePath);
     this.redspotBin = path.join(_basePath, 'node_modules/.bin/redspot');
+
+    this.#scriptWatchers = this.watchScripts();
 
     this.#redspotConfig = new Promise((resolve) => {
       this.once('installed', () => {
@@ -30,6 +35,45 @@ export abstract class Redspot extends Init {
           }
         });
       });
+    });
+  }
+
+  public dispose(): void {
+    super.dispose();
+    this.#scriptWatchers.forEach((watcher) => watcher.dispose());
+  }
+
+  public getScriptFiles(): Thenable<vscode.Uri[]> {
+    return vscode.workspace
+      .findFiles({
+        base: path.resolve(this.basePath, 'scripts'),
+        pattern: '*.{ts,js}'
+      })
+      .then((files) => files, console.error);
+  }
+
+  private watchScripts(): vscode.FileSystemWatcher[] {
+    return this.#scriptPaths.map((scriptPath) => {
+      const watcher = vscode.workspace.createFileSystemWatcher(
+        {
+          base: path.resolve(this.basePath, scriptPath),
+          pattern: '*.{ts,js}'
+        },
+        false,
+        false,
+        false
+      );
+
+      const change = () => {
+        this.getScriptFiles().then((files) => {
+          this.emit('redspot.script.change', files);
+        }, console.error);
+      };
+
+      watcher.onDidCreate(change);
+      watcher.onDidDelete(change);
+
+      return watcher;
     });
   }
 
