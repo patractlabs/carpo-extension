@@ -1,34 +1,30 @@
 import { RowItem, RowItemAddition, useRedspot } from '@carpo/react-components';
 import { Input } from 'antd';
-import React, { ReactNode, useEffect, useState } from 'react';
+import React, { FC, useEffect, useState } from 'react';
 
-const NetworkView: React.FC = () => {
+const NetworkView: FC = () => {
   const { config } = useRedspot();
 
   const [networks, setNetworks] = useState(config?.networks);
 
   useEffect(() => {
-    console.log('network');
-
     setNetworks(config?.networks);
   }, [config]);
 
-  const renderNetworkView = (): ReactNode => {
-    if (networks)
-      return Object.keys(networks).map((type, index) => (
+  return networks ? (
+    <>
+      {Object.keys(networks).map((type, index) => (
         <div key={index}>
           <span>{type}</span>
           <RowItem label='Gas Limit'>
             <Input
+              defaultValue={`${config?.networks[type].gasLimit}`}
               key={index}
               onChange={(e) => {
-                if (networks[type]) {
-                  networks[type].gasLimit = `${e.target.value}`;
-                }
+                networks[type].gasLimit = `${e.target.value}`;
 
                 setNetworks(Object.assign({}, config?.networks));
               }}
-              value={`${config?.networks[type].gasLimit}`}
             />
           </RowItem>
           <RowItemAddition
@@ -42,6 +38,7 @@ const NetworkView: React.FC = () => {
           />
           <RowItem label='EndPoint'>
             <Input
+              defaultValue={`${config?.networks[type].endpoint}`}
               key={index}
               onChange={(e) => {
                 if (networks[type]) {
@@ -50,16 +47,12 @@ const NetworkView: React.FC = () => {
 
                 setNetworks(Object.assign({}, config?.networks));
               }}
-              value={`${config?.networks[type].endpoint}`}
             />
           </RowItem>
         </div>
-      ));
-
-    return null;
-  };
-
-  return <div>{renderNetworkView()}</div>;
+      ))}
+    </>
+  ) : null;
 };
 
 export default React.memo(NetworkView);
