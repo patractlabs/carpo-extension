@@ -65,26 +65,91 @@ export abstract class AbstractViewProvider implements vscode.WebviewViewProvider
     await this._ctx.isReady;
 
     switch (type) {
+      case 'workspace.path':
+        return this._ctx.basePath;
+
       case 'redspot.getConfig':
         return this._ctx.redspotConfig;
+
       case 'redspot.setConfig':
         this._ctx.setRedspotConfig(request as RequestTypes['redspot.setConfig']);
 
-        return Promise.resolve(request as ResponseTypes['redspot.setConfig']);
+        return request as ResponseTypes['redspot.setConfig'];
+
       case 'redspot.compile':
         await this._ctx.compile();
 
-        return Promise.resolve(null);
+        return null;
+
       case 'redspot.subConfig':
         this._ctx.on('redspot.config.change', (redspotConfig) => {
-          // eslint-disable-next-line @typescript-eslint/no-floating-promises
-          this._view?.webview.postMessage({
-            id,
-            subscription: redspotConfig
-          } as TransportSubscriptionMessage<'redspot.subConfig'>);
+          this._view?.webview
+            .postMessage({
+              id,
+              subscription: redspotConfig
+            } as TransportSubscriptionMessage<'redspot.subConfig'>)
+            .then((a) => a, console.error);
         });
 
         return this._ctx.redspotConfig;
+
+      case 'redspot.getScripts':
+        return this._ctx.getScriptFiles();
+
+      case 'redspot.subScripts':
+        this._ctx.on('redspot.script.change', (scripts) => {
+          this._view?.webview
+            .postMessage({
+              id,
+              subscription: scripts
+            } as TransportSubscriptionMessage<'redspot.subScripts'>)
+            .then((a) => a, console.error);
+        });
+
+        return this._ctx.getScriptFiles();
+
+      case 'redspot.getTestFiles':
+        return this._ctx.getTestFiles();
+
+      case 'redspot.subTestFiles':
+        this._ctx.on('redspot.test.change', (tests) => {
+          this._view?.webview
+            .postMessage({
+              id,
+              subscription: tests
+            } as TransportSubscriptionMessage<'redspot.subTestFiles'>)
+            .then((a) => a, console.error);
+        });
+
+        return this._ctx.getTestFiles();
+
+      case 'redspot.run':
+        await this._ctx.run(request as RequestTypes['redspot.run']);
+
+        return null;
+
+      case 'redspot.test':
+        await this._ctx.test(
+          (request as RequestTypes['redspot.test']).filePath,
+          (request as RequestTypes['redspot.test']).noCompile
+        );
+
+        return null;
+
+      case 'redspot.getArtifacts':
+        return this._ctx.getArtifacts();
+
+      case 'redspot.subArtifacts':
+        this._ctx.on('redspot.artifacts.change', (artifacts) => {
+          this._view?.webview
+            .postMessage({
+              id,
+              subscription: artifacts
+            } as TransportSubscriptionMessage<'redspot.subTestFiles'>)
+            .then((a) => a, console.error);
+        });
+
+        return this._ctx.getArtifacts();
 
       default:
         throw new Error(`Unable to handle message of type ${type}`);

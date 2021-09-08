@@ -1,6 +1,6 @@
 import { sendMessage } from '@carpo/common/sendMessage';
-import { RowItem, RowItemAddition, useRedspot } from '@carpo/react-components';
-import { Button, Select, Switch } from 'antd';
+import { Artifacts, RowItem, RowItemAddition, useRedspot } from '@carpo/react-components';
+import { Button, Divider, Select, Switch } from 'antd';
 import React, { useEffect, useState } from 'react';
 import { RedspotConfig } from 'redspot/types/config';
 
@@ -22,10 +22,10 @@ const Compile: React.FC = () => {
   return (
     <>
       <RowItem label='Docker'>
-        <Switch checked={docker} disabled onChange={setDocker} />
+        <Switch checked={docker} onChange={setDocker} />
       </RowItem>
       <RowItem label='Ink version'>
-        <Select disabled onChange={setVersion} options={[{ value: '0.8.0', text: 'v0.8.0' }]} value={version} />
+        <Select onChange={setVersion} options={[{ value: '0.8.0', text: 'v0.8.0' }]} value={version} />
       </RowItem>
       <RowItem label='Toolchain'>
         <Select
@@ -39,16 +39,12 @@ const Compile: React.FC = () => {
           value={toolchain}
         />
       </RowItem>
-      {config?.contract ? (
-        <RowItemAddition
-          buttonTxt='Add source'
-          data={config.contract.ink.sources}
-          handleChange={(data) => {
-            setSources(data);
-          }}
-          label='Sources'
-        />
-      ) : null}
+      <RowItemAddition
+        buttonTxt='Add source'
+        data={sources}
+        handleChange={(data) => setSources(data)}
+        label='Sources'
+      />
       <Button.Group style={{ marginTop: 8, width: '100%' }}>
         <Button
           onClick={() => {
@@ -77,6 +73,8 @@ const Compile: React.FC = () => {
           Compile
         </Button>
       </Button.Group>
+      <Divider style={{ marginTop: 8, marginBottom: 8 }} />
+      <Artifacts />
     </>
   );
 };
