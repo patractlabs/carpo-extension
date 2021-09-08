@@ -22,10 +22,10 @@ const Compile: React.FC = () => {
   return (
     <>
       <RowItem label='Docker'>
-        <Switch checked={docker} onChange={setDocker} />
+        <Switch checked={docker} disabled onChange={setDocker} />
       </RowItem>
       <RowItem label='Ink version'>
-        <Select onChange={setVersion} options={[{ value: '0.8.0', text: 'v0.8.0' }]} value={version} />
+        <Select disabled onChange={setVersion} options={[{ value: '0.8.0', text: 'v0.8.0' }]} value={version} />
       </RowItem>
       <RowItem label='Toolchain'>
         <Select
